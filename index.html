@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stone Paper Scissors Game</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        @keyframes pop {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .shake-animation {
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        .pop-animation {
+            animation: pop 0.5s ease-in-out;
+        }
+        
+        .float-animation {
+            animation: float 2s infinite ease-in-out;
+        }
+        
+        .rotate-animation {
+            animation: rotate 2s infinite linear;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(45deg, #ff8a00, #e52e71, #00d2ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .gradient-bg-alt {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        }
+        
+        .choice-btn {
+            transition: all 0.3s ease;
+        }
+        
+        .choice-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .mode-btn {
+            transition: all 0.3s ease;
+        }
+        
+        .mode-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center font-sans p-4">
+    <div class="container max-w-4xl mx-auto bg-gray-800 rounded-xl shadow-2xl overflow-hidden relative">
+        <div class="absolute inset-0 bg-gradient-to-br from-purple-900/30 to-blue-900/30 pointer-events-none"></div>
+        
+        <div class="relative px-6 py-8">
+            <!-- Header -->
+            <h1 class="text-5xl md:text-6xl font-bold text-center mb-8 gradient-text">Stone Paper Scissors</h1>
+            
+            <!-- Game Mode Selection -->
+            <div id="mode-selection" class="flex flex-col md:flex-row justify-center gap-4 mb-10 fade-in">
+                <button id="vs-computer-btn" class="mode-btn gradient-bg text-white py-4 px-8 rounded-lg text-xl font-bold hover:opacity-90">
+                    <i class="fas fa-robot mr-2"></i> Play vs Computer
+                </button>
+                <button id="vs-player-btn" class="mode-btn gradient-bg-alt text-white py-4 px-8 rounded-lg text-xl font-bold hover:opacity-90">
+                    <i class="fas fa-user-friends mr-2"></i> Play vs Friend
+                </button>
+            </div>
+            
+            <!-- Game Container (Initially Hidden) -->
+            <div id="game-container" class="hidden fade-in">
+                <!-- Player Turn Indicator -->
+                <div id="turn-indicator" class="text-center mb-4 text-2xl font-bold">
+                    <span id="player-turn" class="bg-gradient-to-r from-blue-500 to-purple-500 p-2 rounded">Player 1's Turn</span>
+                </div>
+                
+                <!-- Score Board -->
+                <div class="flex justify-around mb-8 p-4 bg-gray-700/50 rounded-lg">
+                    <div class="text-center">
+                        <h3 id="player1-label" class="text-lg font-semibold text-blue-300">You</h3>
+                        <p id="player1-score" class="text-4xl font-bold gradient-text">0</p>
+                    </div>
+                    <div class="text-center">
+                        <h3 class="text-lg font-semibold text-gray-300">Draws</h3>
+                        <p id="draw-score" class="text-4xl font-bold text-gray-300">0</p>
+                    </div>
+                    <div class="text-center">
+                        <h3 id="player2-label" class="text-lg font-semibold text-red-300">Computer</h3>
+                        <p id="player2-score" class="text-4xl font-bold gradient-text">0</p>
+                    </div>
+                </div>
+                
+                <!-- Result Display -->
+                <div id="result-display" class="hidden text-center mb-8 p-6 rounded-lg bg-gradient-to-r from-purple-800/50 to-blue-800/50">
+                    <div class="flex flex-col md:flex-row justify-center items-center gap-4">
+                        <div class="text-center">
+                            <p id="player1-choice-label" class="text-lg text-blue-300 mb-2">Your Choice</p>
+                            <div id="player1-choice" class="text-5xl mb-2 float-animation"></div>
+                        </div>
+                        <div class="text-3xl font-bold mx-4">VS</div>
+                        <div class="text-center">
+                            <p id="player2-choice-label" class="text-lg text-red-300 mb-2">Computer's Choice</p>
+                            <div id="player2-choice" class="text-5xl mb-2 float-animation"></div>
+                        </div>
+                    </div>
+                    <h2 id="result-message" class="text-3xl font-bold mt-4 gradient-text"></h2>
+                </div>
+                
+                <!-- Game Choices -->
+                <div class="flex flex-wrap justify-center gap-6 mb-8">
+                    <button class="choice-btn w-32 h-32 md:w-40 md:h-40 bg-gradient-to-br from-gray-700 to-gray-900 rounded-full flex items-center justify-center text-5xl shadow-lg hover:from-blue-700 hover:to-blue-900" data-choice="stone">
+                        <i class="fas fa-hand-rock"></i>
+                    </button>
+                    <button class="choice-btn w-32 h-32 md:w-40 md:h-40 bg-gradient-to-br from-gray-700 to-gray-900 rounded-full flex items-center justify-center text-5xl shadow-lg hover:from-green-700 hover:to-green-900" data-choice="paper">
+                        <i class="fas fa-hand-paper"></i>
+                    </button>
+                    <button class="choice-btn w-32 h-32 md:w-40 md:h-40 bg-gradient-to-br from-gray-700 to-gray-900 rounded-full flex items-center justify-center text-5xl shadow-lg hover:from-red-700 hover:to-red-900" data-choice="scissors">
+                        <i class="fas fa-hand-scissors"></i>
+                    </button>
+                </div>
+                
+                <!-- Controls -->
+                <div class="flex justify-center gap-4">
+                    <button id="reset-btn" class="py-3 px-6 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg font-bold text-lg hover:opacity-90 transition-all">
+                        <i class="fas fa-redo-alt mr-2"></i> Reset Game
+                    </button>
+                    <button id="back-btn" class="py-3 px-6 bg-gradient-to-r from-gray-500 to-gray-700 rounded-lg font-bold text-lg hover:opacity-90 transition-all">
+                        <i class="fas fa-arrow-left mr-2"></i> Change Mode
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        const state = {
+            mode: null, // 'computer' or 'player'
+            scores: {
+                player1: 0,
+                player2: 0,
+                draw: 0
+            },
+            currentPlayer: 1,
+            choices: {
+                player1: null,
+                player2: null
+            },
+            gameActive: true
+        };
+
+        // DOM elements
+        const modeSelection = document.getElementById('mode-selection');
+        const gameContainer = document.getElementById('game-container');
+        const turnIndicator = document.getElementById('turn-indicator');
+        const playerTurn = document.getElementById('player-turn');
+        const resultDisplay = document.getElementById('result-display');
+        const player1Label = document.getElementById('player1-label');
+        const player2Label = document.getElementById('player2-label');
+        const player1Score = document.getElementById('player1-score');
+        const player2Score = document.getElementById('player2-score');
+        const drawScore = document.getElementById('draw-score');
+        const player1Choice = document.getElementById('player1-choice');
+        const player2Choice = document.getElementById('player2-choice');
+        const player1ChoiceLabel = document.getElementById('player1-choice-label');
+        const player2ChoiceLabel = document.getElementById('player2-choice-label');
+        const resultMessage = document.getElementById('result-message');
+        const choiceButtons = document.querySelectorAll('.choice-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const backBtn = document.getElementById('back-btn');
+        
+        // Mode selection
+        document.getElementById('vs-computer-btn').addEventListener('click', () => {
+            startGame('computer');
+        });
+        
+        document.getElementById('vs-player-btn').addEventListener('click', () => {
+            startGame('player');
+        });
+        
+        // Initialize game
+        function startGame(mode) {
+            state.mode = mode;
+            state.currentPlayer = 1;
+            state.choices = { player1: null, player2: null };
+            state.scores = { player1: 0, player2: 0, draw: 0 };
+            state.gameActive = true;
+            
+            // Update UI
+            modeSelection.classList.add('hidden');
+            gameContainer.classList.remove('hidden');
+            
+            if (mode === 'computer') {
+                player1Label.textContent = 'You';
+                player2Label.textContent = 'Computer';
+                turnIndicator.classList.add('hidden');
+            } else {
+                player1Label.textContent = 'Player 1';
+                player2Label.textContent = 'Player 2';
+                turnIndicator.classList.remove('hidden');
+                updateTurnIndicator();
+            }
+            
+            updateScoreDisplay();
+            resultDisplay.classList.add('hidden');
+        }
+
+        // Handle choice selection
+        choiceButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                if (!state.gameActive) return;
+                
+                const choice = button.getAttribute('data-choice');
+                
+                if (state.mode === 'computer') {
+                    // Single player mode
+                    state.choices.player1 = choice;
+                    const computerChoice = getComputerChoice();
+                    state.choices.player2 = computerChoice;
+                    
+                    // Animate the button
+                    button.classList.add('pop-animation');
+                    setTimeout(() => {
+                        button.classList.remove('pop-animation');
+                        evaluateRound();
+                    }, 500);
+                } else {
+                    // Two player mode
+                    if (state.currentPlayer === 1) {
+                        state.choices.player1 = choice;
+                        state.currentPlayer = 2;
+                        
+                        // Animate the button
+                        button.classList.add('pop-animation');
+                        setTimeout(() => {
+                            button.classList.remove('pop-animation');
+                            updateTurnIndicator();
+                        }, 500);
+                    } else {
+                        state.choices.player2 = choice;
+                        
+                        // Animate the button
+                        button.classList.add('pop-animation');
+                        setTimeout(() => {
+                            button.classList.remove('pop-animation');
+                            evaluateRound();
+                        }, 500);
+                    }
+                }
+            });
+        });
+        
+        // Computer choice
+        function getComputerChoice() {
+            const choices = ['stone', 'paper', 'scissors'];
+            return choices[Math.floor(Math.random() * choices.length)];
+        }
+        
+        // Evaluate the round
+        function evaluateRound() {
+            const p1 = state.choices.player1;
+            const p2 = state.choices.player2;
+            
+            // Display choices
+            displayChoices(p1, p2);
+            
+            // Determine winner
+            let result;
+            if (p1 === p2) {
+                result = 'draw';
+                state.scores.draw++;
+                resultMessage.textContent = "It's a Draw!";
+            } else if (
+                (p1 === 'stone' && p2 === 'scissors') ||
+                (p1 === 'paper' && p2 === 'stone') ||
+                (p1 === 'scissors' && p2 === 'paper')
+            ) {
+                result = 'player1';
+                state.scores.player1++;
+                resultMessage.textContent = state.mode === 'computer' ? "You Win!" : "Player 1 Wins!";
+            } else {
+                result = 'player2';
+                state.scores.player2++;
+                resultMessage.textContent = state.mode === 'computer' ? "Computer Wins!" : "Player 2 Wins!";
+            }
+            
+            // Update scores
+            updateScoreDisplay();
+            
+            // Reset for next round
+            if (state.mode === 'player') {
+                state.currentPlayer = 1;
+            }
+            
+            state.choices = { player1: null, player2: null };
+            
+            // Show results
+            resultDisplay.classList.remove('hidden');
+            resultDisplay.classList.add('fade-in');
+            
+            // Reset turn indicator if two-player mode
+            if (state.mode === 'player') {
+                updateTurnIndicator();
+            }
+        }
+        
+        // Display the choices
+        function displayChoices(p1, p2) {
+            const emojis = {
+                'stone': '<i class="fas fa-hand-rock"></i>',
+                'paper': '<i class="fas fa-hand-paper"></i>',
+                'scissors': '<i class="fas fa-hand-scissors"></i>'
+            };
+            
+            player1Choice.innerHTML = emojis[p1];
+            player2Choice.innerHTML = emojis[p2];
+            
+            if (state.mode === 'computer') {
+                player1ChoiceLabel.textContent = 'Your Choice';
+                player2ChoiceLabel.textContent = 'Computer\'s Choice';
+            } else {
+                player1ChoiceLabel.textContent = 'Player 1\'s Choice';
+                player2ChoiceLabel.textContent = 'Player 2\'s Choice';
+            }
+        }
+        
+        // Update turn indicator
+        function updateTurnIndicator() {
+            if (state.mode === 'player') {
+                playerTurn.textContent = `Player ${state.currentPlayer}'s Turn`;
+                playerTurn.className = state.currentPlayer === 1 
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 p-2 rounded' 
+                    : 'bg-gradient-to-r from-red-500 to-pink-500 p-2 rounded';
+            }
+        }
+        
+        // Update score display
+        function updateScoreDisplay() {
+            player1Score.textContent = state.scores.player1;
+            player2Score.textContent = state.scores.player2;
+            drawScore.textContent = state.scores.draw;
+        }
+        
+        // Reset button
+        resetBtn.addEventListener('click', () => {
+            state.scores = { player1: 0, player2: 0, draw: 0 };
+            state.choices = { player1: null, player2: null };
+            state.currentPlayer = 1;
+            state.gameActive = true;
+            
+            updateScoreDisplay();
+            resultDisplay.classList.add('hidden');
+            
+            if (state.mode === 'player') {
+                updateTurnIndicator();
+            }
+        });
+        
+        // Back button
+        backBtn.addEventListener('click', () => {
+            gameContainer.classList.add('hidden');
+            modeSelection.classList.remove('hidden');
+        });
+    </script>
+</body>
+</html>
